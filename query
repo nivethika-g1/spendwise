@@ -1,0 +1,23 @@
+
+def query_expenses(month, db_name="expense_tracker.db"):
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    # Debugging: Print all table names
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+    print("Existing tables in database:", tables)
+
+    table_name = f"expenses_{month:02d}"
+
+    # Check if the table exists before querying
+    cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
+    if cursor.fetchone() is None:
+        print(f"Table {table_name} does not exist.")  # Debugging
+        conn.close()
+        return []
+
+    cursor.execute(f"SELECT category, SUM(amount) FROM {table_name} GROUP BY category;")
+    results = cursor.fetchall()
+    conn.close()
+    return results
